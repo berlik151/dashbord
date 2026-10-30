@@ -1,0 +1,35 @@
+[Unit]
+Description=Pulse AI and server monitoring
+After=network-online.target
+Wants=network-online.target
+# Never give up restarting: a crash loop keeps retrying every RestartSec.
+StartLimitIntervalSec=0
+
+[Service]
+# notify: READY=1 after start; WATCHDOG=1 from the collector. No ping for WatchdogSec = hung, restart.
+Type=notify
+NotifyAccess=main
+WatchdogSec=180
+TimeoutStartSec=60
+User=root
+WorkingDirectory=/dashbord
+ExecStart=/usr/bin/python3 /dashbord/server.py
+Environment=PULSE_TIMEZONE=Asia/Kamchatka
+Environment=PULSE_INTERVAL=15
+Environment=PULSE_DATA_DIR=/dashbord/data
+Restart=always
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/dashbord/data /root/.codex
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

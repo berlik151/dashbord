@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="Pulse — токены, лимиты AI-инструментов и состояние сервера">
+  <title>Pulse · Центр управления</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%239b8aff'/%3E%3Cpath d='M5 17h6l3-9 5 17 3-8h5' stroke='%230d0e15' fill='none' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<a class="skip" href="#main">К содержимому</a>
+<div class="shell">
+
+  <aside>
+    <a class="brand" href="#overview" aria-label="Pulse — обзор">
+      <svg width="33" height="33" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="currentColor"/><path d="M5 17h6l3-9 5 17 3-8h5" stroke="#101019" fill="none" stroke-width="2"/></svg>
+      <span>pulse<span class="brand-caption">CONTROL CENTER</span></span>
+    </a>
+    <div class="nav-label">РАБОЧЕЕ ПРОСТРАНСТВО</div>
+    <nav aria-label="Разделы">
+      <a class="nav active" href="#overview"><span>◫</span>Обзор</a>
+      <a class="nav" href="#tools"><span>✳</span>AI-инструменты</a>
+      <a class="nav" href="#server"><span>▤</span>Сервер</a>
+      <a class="nav" href="#sources"><span>◎</span>Источники данных</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <span class="dot"></span> Локальный сбор данных
+      <p>Ваш сервер. Ваши показатели.</p>
+      <span class="version">PULSE / v1.0</span>
+    </div>
+  </aside>
+
+  <main id="main">
+    <header>
+      <div class="crumb">WORKSPACE <span>/</span> ОБЗОР</div>
+      <div class="live">
+        <span class="dot" id="live-dot"></span>
+        <span id="updated" role="status">Подключение…</span>
+        <button id="refresh" aria-label="Обновить показатели" title="Обновить показатели">↻</button>
+      </div>
+    </header>
+
+    <section class="intro" id="overview">
+      <div>
+        <div class="eyebrow">ВАШ РАБОЧИЙ ПУЛЬС</div>
+        <h1>Всё под контролем<span>.</span></h1>
+        <p>Одна панель для ваших AI-инструментов и сервера.</p>
+      </div>
+      <div class="period">
+        <label for="days">Период статистики</label>
+        <select id="days">
+          <option value="1">Сегодня</option>
+          <option value="7" selected>7 дней</option>
+          <option value="14">14 дней</option>
+          <option value="30">30 дней</option>
+        </select>
+      </div>
+    </section>
+
+    <div id="notice" class="notice" role="status" hidden></div>
+
+    <!-- Overview cards -->
+    <div class="overview">
+      <article class="metric">
+        <div class="metric-title">ОБРАБОТАНО ТОКЕНОВ <span>↗</span></div>
+        <div class="number" id="total">—</div>
+        <div class="sub" id="total-sub">Вход + выход, включая кэш</div>
+      </article>
+      <article class="metric">
+        <div class="metric-title">СЕССИЙ С РАСХОДОМ <span>◫</span></div>
+        <div class="number" id="sessions">—</div>
+        <div class="sub">За выбранный период</div>
+      </article>
+      <article class="metric">
+        <div class="metric-title">ВРЕМЯ ЗАДАЧ АГЕНТОВ <span>◷</span></div>
+        <div class="number" id="activity">—</div>
+        <div class="sub" id="activity-sub">По завершённым задачам Codex и Claude</div>
+      </article>
+      <article class="metric">
+        <div class="metric-title">ПОСЛЕДНИЙ РАСХОД <span>⌁</span></div>
+        <div class="number compact" id="last">—</div>
+        <div class="sub">Событие в журналах инструментов</div>
+      </article>
+    </div>
+
+    <!-- 01: AI agents (filled by app.js) -->
+    <div class="section-heading" id="tools">
+      <div>
+        <div class="eyebrow muted">01 / ИНСТРУМЕНТЫ</div>
+        <h2>Ваши AI-агенты</h2>
+      </div>
+      <span class="hint">Общий обзор · независим от папки проекта</span>
+    </div>
+    <div class="agents" id="agents" aria-live="polite">
+      <div class="empty panel">Собираем локальную статистику…</div>
+    </div>
+
+    <!-- 02: token chart -->
+    <section class="chart-card">
+      <div class="chart-head">
+        <div>
+          <div class="eyebrow muted">02 / ДИНАМИКА</div>
+          <h2>Как расходуются токены</h2>
+          <p id="chart-caption">По дням</p>
+        </div>
+        <div class="legend">
+          <span><i class="codex"></i> Codex</span>
+          <span><i class="claude"></i> Claude</span>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <div id="y-axis" class="y-axis"></div>
+        <div id="chart" class="chart" role="img" aria-label="Дневной расход токенов"></div>
+      </div>
+      <div class="axis" id="axis"></div>
+      <details class="data-table">
+        <summary>Данные графика в таблице</summary>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Дата</th><th>Codex</th><th>Claude</th></tr></thead>
+            <tbody id="chart-table"></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <!-- 03: server -->
+    <div class="section-heading" id="server">
+      <div>
+        <div class="eyebrow muted">03 / ИНФРАСТРУКТУРА</div>
+        <h2>Состояние сервера</h2>
+      </div>
+      <span id="uptime" class="hint">—</span>
+    </div>
+    <div class="server-grid" id="host">
+      <div class="empty panel">Ожидаем измерения…</div>
+    </div>
+
+    <!-- 04: data sources -->
+    <section id="sources" class="sources">
+      <div class="chart-head">
+        <div>
+          <div class="eyebrow muted">04 / ПОДКЛЮЧЕНИЯ</div>
+          <h2>Откуда поступают данные</h2>
+        </div>
+        <span class="badge">Только чтение</span>
+      </div>
+      <div id="source-list"></div>
+      <p class="source-foot">Статистика относится к журналам этого пользователя на этом сервере. Тексты диалогов и ключи доступа в дашборд не передаются.</p>
+    </section>
+
+    <footer>
+      <span class="footer-brand">✳ PULSE</span>
+      <span id="footer-time">Обновление каждые 15 секунд</span>
+    </footer>
+  </main>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>
